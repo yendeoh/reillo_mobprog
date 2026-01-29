@@ -4,6 +4,7 @@ import '../widgets/custom_font.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/post_card.dart';
 import '../constants.dart';
+import 'detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -277,6 +278,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     postImage: post['postImage'],
                     profileImage: post['profileImage'],
                     commentUserImage: post['profileImage'],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailScreen(post: post),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

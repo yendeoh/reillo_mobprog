@@ -18,7 +18,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    numOfLikes = widget.post['numOfLikes'];
+    numOfLikes = widget.post['likes'] ?? widget.post['numOfLikes'] ?? 0;
     isLiked = widget.post['isLiked'] ?? false;
   }
 
@@ -48,7 +48,7 @@ class _DetailScreenState extends State<DetailScreen> {
           userName: widget.post['userName'],
           postContent: widget.post['postContent'],
           numOfLikes: numOfLikes,
-          hasImage: widget.post['hasImage'],
+          hasImage: widget.post['hasImage'] ?? false,
           date: widget.post['date'],
           profileImage: widget.post['profileImage'],
           postImage: widget.post['postImage'],

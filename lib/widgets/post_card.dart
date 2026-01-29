@@ -14,6 +14,7 @@ class NewsFeedCard extends StatelessWidget {
   final String? postImage;
   final String? profileImage;
   final String? commentUserImage;
+  final VoidCallback? onTap;
   const NewsFeedCard({
     super.key,
     required this.userName,
@@ -26,11 +27,12 @@ class NewsFeedCard extends StatelessWidget {
     this.profileImage,
     this.commentUserImage,
     required this.date,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    Widget cardContent = Card(
       margin: EdgeInsets.all(ScreenUtil().setSp(10)),
       child: Padding(
         padding: EdgeInsets.all(ScreenUtil().setSp(10)),
@@ -195,27 +197,28 @@ class NewsFeedCard extends StatelessWidget {
                 SizedBox(
                   width: ScreenUtil().setWidth(10),
                 ),
-                Container(
-                  padding: EdgeInsets.fromLTRB(ScreenUtil().setSp(10), 0, 0, 0),
-                  alignment: Alignment.centerLeft,
-                  height: ScreenUtil().setHeight(25),
-                  width: ScreenUtil().setWidth(280),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(ScreenUtil().setSp(10)),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(ScreenUtil().setSp(10), 0, 0, 0),
+                    alignment: Alignment.centerLeft,
+                    height: ScreenUtil().setHeight(25),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(ScreenUtil().setSp(5)),
+                      ),
                     ),
-                  ),
-                  child: CustomFont(
-                    text: 'Write a comment...',
-                    fontSize: ScreenUtil().setSp(11),
-                    color: Colors.grey,
+                    child: CustomFont(
+                      text: 'Write a comment...',
+                      fontSize: ScreenUtil().setSp(11),
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ],
             ),
             SizedBox(
-              height: ScreenUtil().setHeight(10),
+              height: ScreenUtil().setHeight(1),
             ),
             CustomFont(
               text: 'View comments',
@@ -228,5 +231,14 @@ class NewsFeedCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
   }
 }
