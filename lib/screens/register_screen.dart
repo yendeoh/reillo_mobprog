@@ -4,6 +4,7 @@ import '../constants.dart';
 import '../widgets/custom_font.dart';
 import '../widgets/custom_inkwell_button.dart';
 import '../widgets/custom_textformfield.dart';
+import '../services/user_session.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -30,60 +31,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // Validate empty fields
     if (firstname.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('First name is required')),
-      );
+      _showErrorModal('First name is required');
       return;
     }
     
     if (lastname.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Last name is required')),
-      );
+      _showErrorModal('Last name is required');
       return;
     }
     
     if (mobilenum.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mobile number is required')),
-      );
+      _showErrorModal('Mobile number is required');
       return;
     }
     
     if (mobilenum.length != 11) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mobile number must be 11 digits')),
-      );
+      _showErrorModal('Mobile number must be 11 digits');
       return;
     }
 
     
     if (password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password is required')),
-      );
+      _showErrorModal('Password is required');
       return;
     }
     
     // Validate password strength
-    if (password.length < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 8 characters')),
-      );
+    if (password.length < 8) {
+      _showErrorModal('Password must be at least 8 characters');
       return;
     }
     
     if (confirmpassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Confirm password is required')),
-      );
+      _showErrorModal('Confirm password is required');
       return;
     }
-    
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      _showErrorModal('Password must contain at least one uppercase letter');
+      return;
+    }
+   
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      _showErrorModal('Password must contain at least one lowercase letter');
+      return;
+    }
+   
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      _showErrorModal('Password must contain at least one number');
+      return;
+    }
+   
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+      _showErrorModal('Password must contain at least one special character');
+      return;
+    }
+
     if (password != confirmpassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      _showErrorModal('Passwords do not match');
       return;
     }
     
@@ -91,6 +95,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Registration successful!')),
     );
+    
+    // Save username to session so profile reflects it
+    UserSession.setUsername(username);
     
     // Send registration data to backend/database
     _sendRegistrationData(firstname, lastname, mobilenum, username, password);
@@ -113,27 +120,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _sendRegistrationData(String firstname, String lastname, 
       String mobilenum, String username, String password) {
-    // TODO: Implement API call to send registration data to backend
-    // Example structure:
-    // final registrationData = {
-    //   'firstName': firstname,
-    //   'lastName': lastname,
-    //   'mobileNumber': mobilenum,
-    //   'username': username,
-    //   'password': password,
-    // };
-    // 
-    // You can use:
-    // - http package for HTTP requests
-    // - dio package for more advanced HTTP features
-    // - Firebase for authentication
-    // - Your custom backend API
-    //
-    // For now, just logging the registration attempt
-    //print('Registration Data: firstName=$firstname, lastName=$lastname, '
-        //'mobileNum=$mobilenum, username=$username');
   }
   //}
+
+  void _showErrorModal(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.error, color: const Color.fromARGB(255, 219, 174, 171)),
+            SizedBox(width: 8),
+            const Text('Registration Error'),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

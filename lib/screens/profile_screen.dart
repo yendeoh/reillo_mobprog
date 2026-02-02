@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/custom_font.dart';
 import '../widgets/custom_button.dart';
-import '../widgets/post_card.dart';
+import '../widgets/newsfeed_card.dart';
 import '../constants.dart';
 import 'detail_screen.dart';
+import '../services/user_session.dart';
+import '../widgets/custom_dialogs.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,11 +17,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  
   int followers = 324;
   int following = 292;
 
-  
+  String coverImage = 'assets/images/post/baby.jpg';
+  String profileImage = 'assets/images/user/me.jpg';
+
   final List<Map<String, dynamic>> profilePosts = [
     {
       'userName': 'Rhoedney Isid S Reillo',
@@ -40,19 +44,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'shares': 2,
       'hasImage': true,
       'profileImage': 'assets/images/user/me.jpg',
-      'postImage': 'assets/images/post/me.jpg',
+      'postImage': 'assets/images/post/gold.jpg',
     },
   ];
 
-  final List<String> postImage = [
-    'assets/images/user/cat.jpg',
-    'assets/images/post/langga.jpg',
-    'assets/images/post_placeholder.png',
-    'assets/images/post_placeholder.png',
-    'assets/images/user/me.jpg',
-    'assets/images/post/date.jpg',
+  // Logic from image snippet: Helper to show image dialog
+  void customShowImageDialog(BuildContext context, {required String imageUrl}) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            imageUrl.startsWith('http') 
+              ? CachedNetworkImage(imageUrl: imageUrl) 
+              : Image.asset(imageUrl),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
+          ],
+        ),
+      ),
+    );
+  }
 
-  ];
+  void toggleProfileLike(int index) {
+    setState(() {
+      if (profilePosts[index]['isLiked'] == true) {
+        profilePosts[index]['likes'] -= 1;
+        profilePosts[index]['isLiked'] = false;
+      } else {
+        profilePosts[index]['likes'] += 1;
+        profilePosts[index]['isLiked'] = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -75,8 +98,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            image: const DecorationImage(
-                              image: AssetImage('assets/images/post/baby.jpg'),
+                            image: DecorationImage(
+                              image: coverImage.startsWith('http')
+                                  ? CachedNetworkImageProvider(coverImage) as ImageProvider
+                                  : AssetImage(coverImage) as ImageProvider,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -87,9 +112,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              const CircleAvatar(
+                              CircleAvatar(
                                 radius: 50,
-                                backgroundImage: AssetImage('assets/images/user/me.jpg'),
+                                backgroundImage: profileImage.startsWith('http')
+                                    ? CachedNetworkImageProvider(profileImage)
+                                    : AssetImage(profileImage) as ImageProvider,
                               ),
                               Positioned(
                                 bottom: 0,
@@ -97,11 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: CircleAvatar(
                                   radius: 15,
                                   backgroundColor: Colors.grey[300],
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    size: 16,
-                                    color: Colors.black,
-                                  ),
+                                  child: const Icon(Icons.camera_alt, size: 16, color: Colors.black),
                                 ),
                               ),
                             ],
@@ -110,120 +133,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     SizedBox(height: ScreenUtil().setHeight(55)),
-                    
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ScreenUtil().setWidth(20),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CustomFont(
-                            text: 'Rhoedney Isid S Reillo',
-                            fontWeight: FontWeight.bold,
-                            fontSize: ScreenUtil().setSp(20),
-                            color: Colors.black,
+                          ValueListenableBuilder<String?>(
+                            valueListenable: UserSession.username,
+                            builder: (context, value, child) {
+                              return CustomFont(
+                                text: (value == null || value.isEmpty) ? 'Rhoedney Isid S Reillo' : value,
+                                fontWeight: FontWeight.bold,
+                                fontSize: ScreenUtil().setSp(20),
+                                color: Colors.black,
+                              );
+                            },
                           ),
                           SizedBox(height: ScreenUtil().setHeight(5)),
-                          CustomFont(
-                            text: 'San Mateo Rizal',
-                            fontSize: ScreenUtil().setSp(15),
-                            color: Colors.black,
-                          ),
+                          CustomFont(text: 'San Mateo Rizal', fontSize: ScreenUtil().setSp(15), color: Colors.black),
                           SizedBox(height: ScreenUtil().setHeight(10)),
-                          CustomFont(
-                            text: 'gogogo daddy',
-                            fontSize: ScreenUtil().setSp(15),
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          CustomFont(text: 'gogogo daddy', fontSize: ScreenUtil().setSp(15), color: Colors.black, fontWeight: FontWeight.bold),
                         ],
                       ),
                     ),
                     SizedBox(height: ScreenUtil().setHeight(10)),
-                    
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ScreenUtil().setWidth(20),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Column(
-                              children: [
-                                CustomFont(
-                                  text: '2',
-                                  fontSize: ScreenUtil().setSp(16),
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                CustomFont(
-                                  text: 'Posts',
-                                  fontSize: ScreenUtil().setSp(12),
-                                  color: Colors.grey,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              children: [
-                                CustomFont(
-                                  text: following.toString(),
-                                  fontSize: ScreenUtil().setSp(16),
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                CustomFont(
-                                  text: 'Following',
-                                  fontSize: ScreenUtil().setSp(12),
-                                  color: Colors.grey,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              children: [
-                                CustomFont(
-                                  text: followers.toString(),
-                                  fontSize: ScreenUtil().setSp(16),
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                CustomFont(
-                                  text: 'Followers',
-                                  fontSize: ScreenUtil().setSp(12),
-                                  color: Colors.grey,
-                                ),
-                              ],
-                            ),
-                          ),
+                          _buildStatColumn('2', 'Posts'),
+                          _buildStatColumn(following.toString(), 'Following'),
+                          _buildStatColumn(followers.toString(), 'Followers'),
                         ],
                       ),
                     ),
                     SizedBox(height: ScreenUtil().setHeight(15)),
-                    // Action Buttons
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ScreenUtil().setWidth(20),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: CustomButton(
-                              buttonName: 'Follow',
-                              onPressed: () {},
-                            ),
-                          ),
+                          Expanded(child: CustomButton(buttonName: 'Follow', onPressed: () {})),
                           SizedBox(width: ScreenUtil().setWidth(10)),
-                          Expanded(
-                            child: CustomButton(
-                              buttonName: 'Message',
-                              buttonType: 'outlined',
-                              onPressed: () {},
-                            ),
-                          ),
+                          Expanded(child: CustomButton(buttonName: 'Message', buttonType: 'outlined', onPressed: () {})),
                         ],
                       ),
                     ),
@@ -235,27 +186,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: TabBar(
                   indicatorColor: FB_DARK_PRIMARY,
                   tabs: [
-                    Tab(
-                      child: CustomFont(
-                        text: 'Posts',
-                        fontSize: ScreenUtil().setSp(15),
-                        color: Colors.black,
-                      ),
-                    ),
-                    Tab(
-                      child: CustomFont(
-                        text: 'About',
-                        fontSize: ScreenUtil().setSp(15),
-                        color: Colors.black,
-                      ),
-                    ),
-                    Tab(
-                      child: CustomFont(
-                        text: 'Photos',
-                        fontSize: ScreenUtil().setSp(15),
-                        color: Colors.black,
-                      ),
-                    ),
+                    Tab(child: CustomFont(text: 'Posts', fontSize: ScreenUtil().setSp(15), color: Colors.black)),
+                    Tab(child: CustomFont(text: 'About', fontSize: ScreenUtil().setSp(15), color: Colors.black)),
+                    Tab(child: CustomFont(text: 'Photos', fontSize: ScreenUtil().setSp(15), color: Colors.black)),
                   ],
                 ),
               ),
@@ -263,199 +196,143 @@ class _ProfileScreenState extends State<ProfileScreen> {
           },
           body: TabBarView(
             children: [
-              ListView.builder(
-                itemCount: profilePosts.length,
-                itemBuilder: (context, index) {
-                  final post = profilePosts[index];
-                  return NewsFeedCard(
-                    userName: post['userName'],
-                    postContent: post['postContent'],
-                    date: post['date'],
-                    numOfLikes: post['likes'],
-                    numOfComments: post['comments'],
-                    numOfShares: post['shares'],
-                    hasImage: post['hasImage'],
-                    postImage: post['postImage'],
-                    profileImage: post['profileImage'],
-                    commentUserImage: post['profileImage'],
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailScreen(post: post),
-                        ),
-                      );
-                    },
-                  );
-                },
+              // Tab 1: Posts
+              _buildPostsTab(),
+              // Tab 2: About
+              _buildAboutTab(),
+              // Tab 3: Photos (MIXED FROM YOUR IMAGE SNIPPET)
+              _buildPhotosGridTab(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Mixed Logic
+  Widget _buildPhotosGridTab() {
+    const String petImage = 'https://www.petplace.com/article/breed/media_15ad72c2fdb39acf09aafa9934912c89bfa08665a.jpeg?width=1200&format=pjpg&optimize=medium';
+
+    return GridView.count(
+      primary: false,
+      padding: const EdgeInsets.all(20),
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      crossAxisCount: 2,
+      children: <Widget>[
+        GestureDetector(
+          child: CachedNetworkImage(
+            imageUrl: petImage,
+            fit: BoxFit.cover,
+            progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+              child: CircularProgressIndicator(
+                color: FB_DARK_PRIMARY,
+                value: downloadProgress.progress,
               ),
-                      
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.all(ScreenUtil().setSp(15)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomFont(
-                                text: 'About Me',
-                                fontSize: ScreenUtil().setSp(20),
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(12)),
-                              CustomFont(
-                                text:
-                                    'Hi, I\'m Rhoedney! Currently a 3rd year IT student, Professional bug maker. Always down for a collab or just vibing in online games.',
-                                fontSize: ScreenUtil().setSp(14),
-                                color: Colors.grey[700] ?? Colors.grey,
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(20)),
-                              
-                              // Skills Section
-                              Row(
-                                children: [
-                                  Icon(Icons.code, color: FB_DARK_PRIMARY, size: ScreenUtil().setSp(20)),
-                                  SizedBox(width: ScreenUtil().setWidth(8)),
-                                  CustomFont(
-                                    text: 'Tech Stack',
-                                    fontSize: ScreenUtil().setSp(16),
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(8)),
-                              Wrap(
-                                spacing: ScreenUtil().setWidth(8),
-                                runSpacing: ScreenUtil().setHeight(8),
-                                children: [
-                                  _buildSkillChip('Flutter'),
-                                  _buildSkillChip('Dart'),
-                                  _buildSkillChip('HTML/CSS'),
-                                  _buildSkillChip('React.js'),
-                                  _buildSkillChip('JavaScript'),
-                                  _buildSkillChip('Git'),
-                                ],
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(15)),
-                              
-                              // Education Section
-                              Row(
-                                children: [
-                                  Icon(Icons.school, color: FB_DARK_PRIMARY, size: ScreenUtil().setSp(20)),
-                                  SizedBox(width: ScreenUtil().setWidth(8)),
-                                  CustomFont(
-                                    text: 'Education',
-                                    fontSize: ScreenUtil().setSp(16),
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(8)),
-                              CustomFont(
-                                text: 'Bachelor of Science in Information Technology',
-                                fontSize: ScreenUtil().setSp(14),
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(4)),
-                              CustomFont(
-                                text: 'Currently in 3rd Year | Mobile and Web Application Development',
-                                fontSize: ScreenUtil().setSp(12),
-                                color: Colors.grey[700] ?? Colors.grey,
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(4)),
-                              CustomFont(
-                                text: 'National University - Manila | 2023-2027',
-                                fontSize: ScreenUtil().setSp(12),
-                                color: Colors.grey[500] ?? Colors.grey,
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(15)),
-                              
-                              // Interests Section
-                              Row(
-                                children: [
-                                  Icon(Icons.interests, color: FB_DARK_PRIMARY, size: ScreenUtil().setSp(20)),
-                                  SizedBox(width: ScreenUtil().setWidth(8)),
-                                  CustomFont(
-                                    text: 'Interests & Goals',
-                                    fontSize: ScreenUtil().setSp(16),
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: ScreenUtil().setHeight(8)),
-                              Wrap(
-                                spacing: ScreenUtil().setWidth(8),
-                                runSpacing: ScreenUtil().setHeight(8),
-                                children: [
-                                  _buildSkillChip('Mobile Apps'),
-                                  _buildSkillChip('Software Design'),
-                                  _buildSkillChip('Problem Solving'),
-                                  _buildSkillChip('Learning New Tech'),
-                                  _buildSkillChip('Open Source'),
-                                  _buildSkillChip('Internships'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: ScreenUtil().setWidth(5),
-                          mainAxisSpacing: ScreenUtil().setHeight(5),
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: postImage.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.grey[300],
-                            ),
-                            child: Image.asset(
-                              postImage[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[300],
-                                  child: Icon(
-                                    Icons.image,
-                                    color: Colors.grey[600],
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+            ),
+            errorWidget: (context, url, error) => Icon(Icons.error, size: 48.sp),
+          ),
+          onTap: () => customShowImageDialog(context, imageUrl: petImage),
+        ),
+        GestureDetector(
+          onTap: () => customShowImageDialog(context, imageUrl: petImage),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            color: Colors.teal[100],
+            child: CachedNetworkImage(
+              imageUrl: petImage,
+              fit: BoxFit.cover,
+              progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+                child: CircularProgressIndicator(
+                  color: FB_DARK_PRIMARY,
+                  value: downloadProgress.progress,
+                ),
+              ),
+              errorWidget: (context, url, error) => Icon(Icons.error, size: 48.sp),
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => customShowImageDialog(context, imageUrl: petImage),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.teal[200],
+              image: DecorationImage(
+                image: NetworkImage(petImage),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Rest of your existing UI components...
+  Widget _buildStatColumn(String count, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          CustomFont(text: count, fontSize: ScreenUtil().setSp(16), color: Colors.black, fontWeight: FontWeight.bold),
+          CustomFont(text: label, fontSize: ScreenUtil().setSp(12), color: Colors.grey),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostsTab() {
+    return ValueListenableBuilder<String?>(
+      valueListenable: UserSession.username,
+      builder: (context, value, child) {
+        return ListView.builder(
+          itemCount: profilePosts.length,
+          itemBuilder: (context, index) {
+            final post = profilePosts[index];
+            return NewsFeedCard(
+              userName: (value == null || value.isEmpty) ? post['userName'] : value,
+              postContent: post['postContent'],
+              date: post['date'],
+              numOfLikes: post['likes'],
+              numOfComments: post['comments'] ?? 0,
+              numOfShares: post['shares'] ?? 0,
+              hasImage: post['hasImage'],
+              postImage: post['postImage'],
+              profileImage: post['profileImage'],
+              isLiked: post['isLiked'] ?? false,
+              onLikePressed: () => toggleProfileLike(index),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(post: post))),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildAboutTab() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(ScreenUtil().setSp(15)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomFont(text: 'About Me', fontSize: ScreenUtil().setSp(20), color: Colors.black, fontWeight: FontWeight.bold),
+            SizedBox(height: ScreenUtil().setHeight(12)),
+            CustomFont(text: 'Hi, I\'m Rhoedney! Professional bug maker.', fontSize: ScreenUtil().setSp(14), color: Colors.grey[700] ?? Colors.grey),
+            SizedBox(height: ScreenUtil().setHeight(20)),
+            Row(children: [Icon(Icons.code, color: FB_DARK_PRIMARY), SizedBox(width: 8), CustomFont(text: 'Tech Stack', fontSize: ScreenUtil().setSp(15), color: Colors.black, fontWeight: FontWeight.bold)]),
+            Wrap(spacing: 8, children: [_buildSkillChip('Flutter'), _buildSkillChip('Dart'), _buildSkillChip('React.js')]),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildSkillChip(String skill) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ScreenUtil().setWidth(12),
-        vertical: ScreenUtil().setHeight(6),
-      ),
-      decoration: BoxDecoration(
-        color: FB_DARK_PRIMARY.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: FB_DARK_PRIMARY),
-      ),
-      child: CustomFont(
-        text: skill,
-        fontSize: ScreenUtil().setSp(12),
-        color: FB_DARK_PRIMARY,
-      ),
+    return Chip(
+      label: CustomFont(text: skill, fontSize: 12, color: FB_DARK_PRIMARY),
+      backgroundColor: FB_DARK_PRIMARY.withOpacity(0.1),
+      side: BorderSide(color: FB_DARK_PRIMARY),
     );
   }
 }

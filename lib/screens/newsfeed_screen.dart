@@ -1,5 +1,8 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import '../widgets/newsfeed_card.dart';
+import '../widgets/promo_slide.dart';
 import 'detail_screen.dart';
 
 class NewsFeedScreen extends StatefulWidget {
@@ -12,10 +15,32 @@ class NewsFeedScreen extends StatefulWidget {
 class _NewsFeedScreenState extends State<NewsFeedScreen> {
   late List<Map<String, dynamic>> posts;
 
+
+
   @override
   void initState() {
     super.initState();
     posts = [
+      // Posts from your screenshot images
+      {
+        'userName': 'Cyrus Robles',
+        'postContent': 'Kamusta',
+        'numOfLikes': 2000,
+        'date': 'October 11',
+        'hasImage': true,
+        'profileImage': 'https://image.petmd.com/files/inline-images/shiba-inu-black-and-tan-colors.jpg?VersionId=pLq84BEOjdMjXeDCUJJJLFPuIWYSVMUU',
+        'postImage': 'https://www.petplace.com/article/breed/media_15ad72c2fdb39acf09aafa9934912c89bfa08665a.jpeg?width=1200&format=pjpg&optimize=medium',
+        'isLiked': false,
+      },
+      {
+        'userName': 'Rhoedney Reillo',
+        'postContent': 'Kicking off the holiday season with her!',
+        'numOfLikes': 200,
+        'date': 'December 2',
+        'hasImage': false,
+        'profileImage': 'assets/images/user/me.jpg', // Placeholder
+        'isLiked': false,
+      },
       {
         'userName': 'Rhoedney Reillo',
         'postContent': 'God did',
@@ -84,6 +109,8 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
         'isLiked': false,
       },
     ];
+
+
   }
 
   void toggleLike(int index) {
@@ -98,12 +125,50 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
     });
   }
 
+  // The helper method for the carousel placed in the middle; it selects up to 5 posts centered around the feed's midpoint
+  List<Widget> carouselItems() {
+    if (posts.isEmpty) return [];
+    final slideCount = posts.length >= 5 ? 5 : posts.length;
+    final mid = posts.length ~/ 2;
+    int start = mid - (slideCount ~/ 2);
+    if (start < 0) start = 0;
+    if (start + slideCount > posts.length) start = posts.length - slideCount;
+    return List.generate(slideCount, (i) {
+      final post = posts[start + i];
+      if (post['title'] == null) post['title'] = 'More Details';
+      return PromoSlide(post: post);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: posts.length,
+      // We add +1 to the length to account for the Carousel inserted in the middle
+      itemCount: posts.length + 1,
       itemBuilder: (context, index) {
-        final post = posts[index];
+        final carouselPosition = (posts.length ~/ 2) + 1; // insert after middle
+
+        // Show the Carousel Slider at the middle position
+        if (index == carouselPosition) {
+          return Column(
+            children: [
+              CarouselSlider(
+                options: CarouselOptions(
+                  enableInfiniteScroll: false,
+                  height: 308.h,
+                  padEnds: false,
+                ),
+                items: carouselItems(),
+              ),
+              SizedBox(height: 20.h),
+            ],
+          );
+        }
+
+        // Map builder index to post index (account for the inserted carousel)
+        final postIndex = index < carouselPosition ? index : index - 1;
+        final post = posts[postIndex];
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -114,15 +179,15 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
             );
           },
           child: NewsFeedCard(
-            userName: post['userName'], 
+            userName: post['userName'],
             postContent: post['postContent'],
             numOfLikes: post['numOfLikes'],
             hasImage: post['hasImage'],
             date: post['date'],
             profileImage: post['profileImage'],
-            postImage: post['postImage'],
+            postImage: post['postImage'] ?? '',
             isLiked: post['isLiked'],
-            onLikePressed: () => toggleLike(index),
+            onLikePressed: () => toggleLike(postIndex),
           ),
         );
       },

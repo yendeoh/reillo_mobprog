@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../constants.dart';
 import '../widgets/custom_inkwell_button.dart';
+import '../services/user_session.dart';
+import '../widgets/custom_dialogs.dart';
 
 class LogInScreen extends StatefulWidget {
   const LogInScreen({super.key});
@@ -12,9 +14,18 @@ class LogInScreen extends StatefulWidget {
 }
 
 class _LogInScreenState extends State<LogInScreen> {
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController usernameController = TextEditingController(text: 'user');
+  TextEditingController passwordController = TextEditingController(text: 'user');
   final _formKey = GlobalKey<FormState>();
+
+  void login() {
+    if (usernameController.text == 'user' && passwordController.text == 'user') {
+      UserSession.setUsername(usernameController.text.trim());
+      Navigator.pushReplacementNamed(context, '/Home');
+    } else {
+      customDialog(context, title: 'Error', content: 'Username and password does not matched');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +90,7 @@ class _LogInScreenState extends State<LogInScreen> {
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
+                            login();
                           }
                         },
                         height: ScreenUtil().setHeight(40),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reillo_mobprog/widgets/newsfeed_card.dart';
-import 'package:reillo_mobprog/widgets/notification.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() => runApp(const ReilloFacebook());
 
@@ -26,6 +25,7 @@ class ReilloFacebook extends StatelessWidget {
             '/Home': (context) => const HomeScreen(),
             '/Login': (context) => const LogInScreen(),
             '/Register': (context) => const RegisterScreen(),
+            '/splash': (context) => const SplashScreen(),
           },
         );
       },

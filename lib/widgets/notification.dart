@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/custom_font.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -9,7 +10,7 @@ class Notification extends StatelessWidget {
   required this.post,
   required this.description,
   required this.time,
-  this.profileImage = 'assets/images/',
+  this.profileImage = 'assets/images/pfplaceholde.jpg',
   this.onTap,
 });
 
@@ -27,7 +28,9 @@ class Notification extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: ScreenUtil().setSp(25),
-            backgroundImage: AssetImage(profileImage),
+            backgroundImage: profileImage.startsWith('http')
+                ? CachedNetworkImageProvider(profileImage)
+                : AssetImage(profileImage) as ImageProvider,
           ),
           SizedBox(
             width: ScreenUtil().setWidth(10),
